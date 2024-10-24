@@ -16,6 +16,19 @@ const Formulario = ({ dispatch }) => {
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
+
+    // Validación para el campo nombre (no acepta caracteres especiales ni números).
+    if (name === "nombre" && /[^a-zA-Z\s]/.test(value)) {
+      alert("El nombre no puede contener números ni caracteres especiales.");
+      return;
+    }
+
+    // Validación para el campo número (solo acepta números).
+    if (name === "numero" && /[^0-9]/.test(value)) {
+      alert("El número solo puede contener dígitos.");
+      return;
+    }
+
     setData({
       ...data,
       [name]: type === "file" ? files[0] : value, // Manejo especial para el input de tipo file

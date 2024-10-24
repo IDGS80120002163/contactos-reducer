@@ -1,4 +1,4 @@
-import { useState } from "react"; 
+import { useState } from "react";
 
 const TablaContactos = ({ contactos = [], dispatch }) => {
   // Estado para manejar los datos del contacto a actualizar
@@ -12,6 +12,24 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
   });
 
   const { nombre, numero, sexo, fecha_nac, imagen, id } = data;
+
+  // Validación para el campo de nombre (solo letras)
+  const validateName = (name) => /^[a-zA-Z\s]+$/.test(name);
+
+  // Validación para el campo de número (solo números)
+  const validateNumber = (num) => /^\d*$/.test(num);
+
+  // Función para calcular la edad a partir de la fecha de nacimiento
+  const calcularEdad = (fecha_nac) => {
+    const hoy = new Date();
+    const nacimiento = new Date(fecha_nac);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
+  };
 
   // Definimos el método handleDelete
   const handleDelete = (id) => {
@@ -36,6 +54,15 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
 
   // Definimos el método handleUpdate para aplicar la actualización
   const handleUpdate = () => {
+    if (!validateName(nombre)) {
+      alert("El nombre no debe contener caracteres especiales ni números.");
+      return;
+    }
+    if (!validateNumber(numero)) {
+      alert("El número solo debe contener dígitos.");
+      return;
+    }
+
     const updateAction = {
       type: "update",
       payload: {
@@ -53,7 +80,7 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
   };
 
   const handleImageChange = (e) => {
-    setData({ ...data, imagen: e.target.files[0] }); // Guardar la imagen seleccionada
+    setData({ ...data, imagen: e.target.files[0] });
   };
 
   return (
@@ -66,6 +93,7 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
             <th>Número</th>
             <th>Sexo</th>
             <th>Fecha de Nacimiento</th>
+            <th>Edad</th> {/* Nueva columna de Edad */}
             <th>Imagen</th>
             <th>Acciones</th>
           </tr>
@@ -80,12 +108,13 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
                 <td>{contacto.numero}</td>
                 <td>{contacto.sexo}</td>
                 <td>{contacto.fecha_nac}</td>
+                <td>{calcularEdad(contacto.fecha_nac)}</td> {/* Cálculo de edad */}
                 <td>
-                  {contacto.imagen && ( // Comprobamos si hay imagen y la mostramos
+                  {contacto.imagen && (
                     <img
-                      src={URL.createObjectURL(contacto.imagen)} // Convertimos el archivo a una URL
+                      src={URL.createObjectURL(contacto.imagen)}
                       alt={contacto.nombre}
-                      style={{ width: "50px", height: "50px", borderRadius: "50%" }} // Estilos opcionales
+                      style={{ width: "50px", height: "50px", borderRadius: "50%" }}
                     />
                   )}
                 </td>
@@ -116,7 +145,14 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
               type="text"
               name="nombre"
               value={nombre}
-              onChange={(e) => setData({ ...data, nombre: e.target.value })}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  nombre: validateName(e.target.value)
+                    ? e.target.value
+                    : data.nombre,
+                })
+              }
               className="form-control"
             />
           </label>
@@ -126,7 +162,14 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
               type="text"
               name="numero"
               value={numero}
-              onChange={(e) => setData({ ...data, numero: e.target.value })}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  numero: validateNumber(e.target.value)
+                    ? e.target.value
+                    : data.numero,
+                })
+              }
               className="form-control"
             />
           </label>
@@ -183,8 +226,8 @@ const TablaContactos = ({ contactos = [], dispatch }) => {
             <input
               type="file"
               name="imagen"
-              accept="image/*" // Para aceptar solo imágenes
-              onChange={handleImageChange} // Manejar el cambio de imagen
+              accept="image/*"
+              onChange={handleImageChange}
               className="form-control"
             />
           </label>
